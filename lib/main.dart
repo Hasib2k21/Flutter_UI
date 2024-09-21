@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 void main() {
   runApp(MyApp());
@@ -9,21 +10,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       home: OnboardingScreen(),
     );
   }
 }
 
-class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+class OnboardingController extends GetxController {
+  var currentPage = 0.obs;
 
-  @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  void changePage(int page) {
+    currentPage.value = page;
+  }
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  int currentPage = 0;
+class OnboardingScreen extends StatelessWidget {
+  final OnboardingController controller = Get.put(OnboardingController());
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +40,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: PageView.builder(
                 itemCount: demoData.length,
                 onPageChanged: (value) {
-                  setState(() {
-                    currentPage = value;
-                  });
+                  controller.changePage(value);
                 },
                 itemBuilder: (context, index) => OnboardContent(
                   illustration: demoData[index]["illustration"],
@@ -54,33 +54,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 demoData.length,
-                    (index) => DotIndicator(isActive: index == currentPage),
+                    (index) => Obx(() => DotIndicator(isActive: index == controller.currentPage.value)),
               ),
             ),
             const Spacer(flex: 2),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ElevatedButton(
-                onPressed: currentPage == demoData.length - 1
-                    ? () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const NextPage()),
-                  );
-                }
-                    : null, // Disable button unless on last page
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: currentPage == demoData.length - 1
-                      ? const Color(0xFF22A45D)
-                      : Colors.grey, // Change color based on page
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 40),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              child: Obx(() {
+                return ElevatedButton(
+                  onPressed: controller.currentPage.value == demoData.length - 1
+                      ? () {
+                    Get.to(() => const NextPage());
+                  }
+                      : null, // Disable button unless on the last page
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: controller.currentPage.value == demoData.length - 1
+                        ? const Color(0xFF22A45D)
+                        : Colors.grey, // Change color based on page
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                ),
-                child: Text("Get Started".toUpperCase()),
-              ),
+                  child: Text("Get Started".toUpperCase()),
+                );
+              }),
             ),
             const Spacer(),
           ],
