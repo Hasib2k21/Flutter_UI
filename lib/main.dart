@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:practice/state_holders/bottom_navbar_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:practice/state_holders/bottom_navbar_bloc.dart';
 import 'home_screen.dart';
 
 void main() {
@@ -12,16 +12,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => BottomNavbarProvider()),
-      ],
-      child: MaterialApp(
-        title: 'Product App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: const BottomNavScreen(),
+    return MaterialApp(
+      title: 'Product App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: BlocProvider(
+        create: (_) => BottomNavbarBloc(),
+        child: const BottomNavScreen(),
       ),
     );
   }
@@ -39,20 +37,26 @@ class BottomNavScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomNavbarProvider = Provider.of<BottomNavbarProvider>(context);
+    return BlocBuilder<BottomNavbarBloc, BottomNavbarState>(
+      builder: (context, state) {
+        final selectedIndex = (state as TabSelectedState).selectedIndex;
 
-    return Scaffold(
-      body: _screens[bottomNavbarProvider.selectedIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: bottomNavbarProvider.selectedIndex,
-        onDestinationSelected: (index) => bottomNavbarProvider.changeIndex(index),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.category_outlined), label: 'Category'),
-          NavigationDestination(icon: Icon(Icons.shopping_cart), label: 'Cart'),
-          NavigationDestination(icon: Icon(Icons.favorite_border_outlined), label: 'Favorite'),
-        ],
-      ),
+        return Scaffold(
+          body: _screens[selectedIndex],
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: selectedIndex,
+            onDestinationSelected: (index) {
+              BlocProvider.of<BottomNavbarBloc>(context).add(SelectTabEvent(index));
+            },
+            destinations: const [
+              NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
+              NavigationDestination(icon: Icon(Icons.category_outlined), label: 'Category'),
+              NavigationDestination(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+              NavigationDestination(icon: Icon(Icons.favorite_border_outlined), label: 'Favorite'),
+            ],
+          ),
+        );
+      },
     );
   }
 }
