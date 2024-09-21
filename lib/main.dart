@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => OnboardingProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -10,22 +15,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      home: OnboardingScreen(),
+    return MaterialApp(
+      home: const OnboardingScreen(),
     );
   }
 }
 
-class OnboardingController extends GetxController {
-  var currentPage = 0.obs;
+class OnboardingProvider extends ChangeNotifier {
+  int _currentPage = 0;
 
-  void changePage(int page) {
-    currentPage.value = page;
+  int get currentPage => _currentPage;
+
+  void setCurrentPage(int page) {
+    _currentPage = page;
+    notifyListeners();
   }
 }
 
 class OnboardingScreen extends StatelessWidget {
-  final OnboardingController controller = Get.put(OnboardingController());
+  const OnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +48,8 @@ class OnboardingScreen extends StatelessWidget {
               child: PageView.builder(
                 itemCount: demoData.length,
                 onPageChanged: (value) {
-                  controller.changePage(value);
+                  // Use Provider to update the current page
+                  context.read<OnboardingProvider>().setCurrentPage(value);
                 },
                 itemBuilder: (context, index) => OnboardContent(
                   illustration: demoData[index]["illustration"],
@@ -54,32 +63,47 @@ class OnboardingScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 demoData.length,
-                    (index) => Obx(() => DotIndicator(isActive: index == controller.currentPage.value)),
+                    (index) => Consumer<OnboardingProvider>(
+                  builder: (context, onboardingProvider, child) {
+                    return DotIndicator(
+                      isActive: index == onboardingProvider.currentPage,
+                    );
+                  },
+                ),
               ),
             ),
             const Spacer(flex: 2),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Obx(() {
-                return ElevatedButton(
-                  onPressed: controller.currentPage.value == demoData.length - 1
-                      ? () {
-                    Get.to(() => const NextPage());
-                  }
-                      : null, // Disable button unless on the last page
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: controller.currentPage.value == demoData.length - 1
-                        ? const Color(0xFF22A45D)
-                        : Colors.grey, // Change color based on page
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              child: Consumer<OnboardingProvider>(
+                builder: (context, onboardingProvider, child) {
+                  return ElevatedButton(
+                    onPressed: onboardingProvider.currentPage ==
+                        demoData.length - 1
+                        ? () {
+                      // Navigate to the next page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const NextPage()),
+                      );
+                    }
+                        : null, // Disable button if not on the last page
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: onboardingProvider.currentPage ==
+                          demoData.length - 1
+                          ? const Color(0xFF22A45D)
+                          : Colors.grey, // Change color based on page
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 40),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  ),
-                  child: Text("Get Started".toUpperCase()),
-                );
-              }),
+                    child: Text("Get Started".toUpperCase()),
+                  );
+                },
+              ),
             ),
             const Spacer(),
           ],
@@ -157,7 +181,7 @@ class DotIndicator extends StatelessWidget {
   }
 }
 
-// Demo data for the Onboarding screen
+// Demo data for our Onboarding screen
 List<Map<String, dynamic>> demoData = [
   {
     "illustration": "https://i.postimg.cc/L43CKddq/Illustrations.png",
@@ -179,7 +203,6 @@ List<Map<String, dynamic>> demoData = [
   },
 ];
 
-// Define the next page to navigate to
 class NextPage extends StatelessWidget {
   const NextPage({super.key});
 
