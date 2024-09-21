@@ -19,9 +19,3 @@ class BottomNavbarController extends GetxController{
 
 
 
-class ControllerBinders extends Bindings{
-  @override
-  void dependencies() {
-    Get.lazyPut(()=>BottomNavbarController());
-  }
-}
