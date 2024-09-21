@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:practice/state_holders/bottom_navbar_controller.dart';
+import 'controller_binder.dart';
 import 'home_screen.dart';
 
 void main() {
