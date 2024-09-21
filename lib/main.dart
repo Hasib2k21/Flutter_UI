@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => OnboardingProvider(),
+    BlocProvider(
+      create: (context) => OnboardingCubit(),
       child: const MyApp(),
     ),
   );
@@ -21,15 +21,11 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class OnboardingProvider extends ChangeNotifier {
-  int _currentPage = 0;
+// Cubit to manage onboarding state
+class OnboardingCubit extends Cubit<int> {
+  OnboardingCubit() : super(0);
 
-  int get currentPage => _currentPage;
-
-  void setCurrentPage(int page) {
-    _currentPage = page;
-    notifyListeners();
-  }
+  void setCurrentPage(int page) => emit(page);
 }
 
 class OnboardingScreen extends StatelessWidget {
@@ -48,8 +44,8 @@ class OnboardingScreen extends StatelessWidget {
               child: PageView.builder(
                 itemCount: demoData.length,
                 onPageChanged: (value) {
-                  // Use Provider to update the current page
-                  context.read<OnboardingProvider>().setCurrentPage(value);
+                  // Use BLoC to update the current page
+                  context.read<OnboardingCubit>().setCurrentPage(value);
                 },
                 itemBuilder: (context, index) => OnboardContent(
                   illustration: demoData[index]["illustration"],
@@ -63,11 +59,9 @@ class OnboardingScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 demoData.length,
-                    (index) => Consumer<OnboardingProvider>(
-                  builder: (context, onboardingProvider, child) {
-                    return DotIndicator(
-                      isActive: index == onboardingProvider.currentPage,
-                    );
+                    (index) => BlocBuilder<OnboardingCubit, int>(
+                  builder: (context, currentPage) {
+                    return DotIndicator(isActive: index == currentPage);
                   },
                 ),
               ),
@@ -75,23 +69,22 @@ class OnboardingScreen extends StatelessWidget {
             const Spacer(flex: 2),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Consumer<OnboardingProvider>(
-                builder: (context, onboardingProvider, child) {
+              child: BlocBuilder<OnboardingCubit, int>(
+                builder: (context, currentPage) {
                   return ElevatedButton(
-                    onPressed: onboardingProvider.currentPage ==
-                        demoData.length - 1
+                    onPressed: currentPage == demoData.length - 1
                         ? () {
                       // Navigate to the next page
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const NextPage()),
+                          builder: (context) => const NextPage(),
+                        ),
                       );
                     }
                         : null, // Disable button if not on the last page
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: onboardingProvider.currentPage ==
-                          demoData.length - 1
+                      backgroundColor: currentPage == demoData.length - 1
                           ? const Color(0xFF22A45D)
                           : Colors.grey, // Change color based on page
                       foregroundColor: Colors.white,
