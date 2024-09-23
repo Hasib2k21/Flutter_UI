@@ -1,17 +1,16 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
-
-class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<SignInScreen> createState() => _SignInScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -30,7 +29,7 @@ class _SignInScreenState extends State<SignInScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome Back!',
+                  'Create Account',
                   style: Theme.of(context)
                       .textTheme
                       .headlineLarge
@@ -38,11 +37,39 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Enter your email to start shopping and get awesome deals today!',
+                  'Fill in your details below to get started on a seamless shopping experience.',
                   style: Theme.of(context)
                       .textTheme
                       .titleMedium
                       ?.copyWith(color: AppColors.textBody),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _firstNameController,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.person),
+                    hintText: 'First Name',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your first name';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _lastNameController,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.person),
+                    hintText: 'Last Name',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your last name';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -65,7 +92,6 @@ class _SignInScreenState extends State<SignInScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
-                  // Toggle password visibility
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
@@ -92,27 +118,17 @@ class _SignInScreenState extends State<SignInScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () {
-
-                  },
-                  child: Text(
-                    'Forgot Your Password?',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(color: AppColors.themeColor),
-                  ),
-                ),
+                const Text(
+                    'By clicking Create Account, you acknowledge you have read and agreed to our Terms of Use and Privacy Policy'),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
-                      // Proceed to log in if the form is valid
-                      // Get.to(() => const BottomNavScreen());
+                      // Proceed to the next screen if the form is valid
+                      Get.to(() => const BottomNavScreen());
                     }
                   },
-                  child: const Text('Log In'),
+                  child: const Text('Create Account'),
                 ),
                 const SizedBox(height: 40),
                 _buildOrSizedBox(),
@@ -120,8 +136,6 @@ class _SignInScreenState extends State<SignInScreen> {
                 _buildFbElevatedButton('Log In With Google', AssetsPath.google),
                 const SizedBox(height: 12),
                 _buildFbElevatedButton('Log In With Facebook', AssetsPath.fb),
-                const SizedBox(height: 36),
-                _buildRichText(context),
               ],
             ),
           ),
@@ -182,36 +196,10 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Widget _buildRichText(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          RichText(
-            text: TextSpan(
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: Colors.black87),
-              text: "Don't have an Account? ",
-              children: [
-                TextSpan(
-                  text: 'Register',
-                  style: const TextStyle(color: AppColors.themeColor),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      // Handle register navigation
-                    },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
