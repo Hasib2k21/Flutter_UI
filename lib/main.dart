@@ -1,37 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:practice/utilities/product.dart';
-import 'package:practice/widget/product_card.dart';
-
+import 'package:practice/views/auth/login_screen.dart';
+import 'package:practice/views/cart_screen.dart';
+import 'package:provider/provider.dart';
+import 'viewmodels/product_view_model.dart';
+import 'viewmodels/cart_view_model.dart';
+import 'viewmodels/user_view_model.dart';
+import 'views/home_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-      ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Product Card UI'),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProductViewModel()),
+        ChangeNotifierProvider(create: (_) => CartViewModel()),
+        ChangeNotifierProvider(create: (_) => UserViewModel()),
+      ],
+      child: MaterialApp(
+        title: 'E-Commerce App',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
         ),
-        body: SizedBox(
-          height: 250,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              return ProductCard(product: products[index]);
-            },
-          ),
-        ),
+        home: HomeScreen(),
       ),
     );
   }
